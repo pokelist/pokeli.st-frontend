@@ -1,0 +1,7 @@
+{
+  "name": "pokeli.st-frontend",
+  "description": "Frontend to the pokeli.st frontend.",
+  "dependencies": {
+    "zepto": "~1.1.4"
+  }
+}

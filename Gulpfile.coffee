@@ -1,74 +1,117 @@
-gulp   = require "gulp"
-merge  = require "merge-stream"
-coffee = require "gulp-coffee"
-less   = require "gulp-less"
+gulp     = require "gulp"
+_        = require "lodash"
+merge    = require "merge-stream"
+cached   = require "gulp-cached"
+remember = require "gulp-remember"
+watch    = require "gulp-watch"
+plumber  = require "gulp-plumber"
+clean    = require "gulp-clean"
+coffee   = require "gulp-coffee"
+less     = require "gulp-less"
+bower    = require "gulp-bower"
+
+transformDict = (dict, transform) ->
+    for key, val of dict
+        dict[key] = transform(val)
+    dict
+
+registerTask = (name, arg1, arg2) ->
+    watchName = (name) -> if name != "default" then "watch-#{name}" else "watch"
+    if _.isArray(arg1)
+        deps = arg1
+        fn   = arg2 or ->
+    else
+        deps = []
+        fn   = arg1
+    gulp.task name, deps, fn(false)
+    gulp.task watchName(name), _.map(deps, watchName), fn(true)
+
+
+config =
+    sourceDirectory: "./src/"
+    buildDirectory: "./build/"
 
 # ==================
 # == ENTRY POINTS ==
 # ==================
 
-getFiles =
-    coffee: ->
-        gulp.src "./src/js/**/*.coffee"
-    js: ->
-        gulp.src "./src/js/**/*.js"
-    less: ->
-        gulp.src "./src/styles/**/*.less"
-    css: ->
-        gulp.src "./src/styles/**/*.css"
-    html: ->
-        gulp.src "./src/*.html"
+getFiles = transformDict(
+    coffee: "js/**/*.coffee"
+    js: "js/**/*.js"
+    less: "styles/**/*.less"
+    css: "styles/**/*.css"
+    html: "*.html"
+    (val) -> (isWatch) ->
+        path = "#{config.sourceDirectory}#{val}"
+        src = gulp.src path, base: config.sourceDirectory
+        if isWatch then src = src.pipe(watch(path)).pipe(plumber())
+        src
+)
 
 # ==================
 # == DESTINATIONS ==
 # ==================
 
-store =
-    js: ->
-        gulp.dest "./build/js"
-    css: ->
-        gulp.dest "./build/styles"
-    html: ->
-        gulp.dest "./build"
+store = transformDict(
+    js: ""
+    css: ""
+    html: ""
+    (val) -> ->
+        gulp.dest "#{config.buildDirectory}#{val}"
+)
 
 # ===================
 # == COMPILE FILES ==
 # ===================
 
 compile =
-    coffee: ->
-        getFiles.coffee()
+    coffee: (isWatch) ->
+        getFiles.coffee(isWatch)
+        .pipe(cached("coffee"))
         .pipe(coffee())
-    js: ->
+        .pipe(remember("coffee"))
+    js: (isWatch) ->
         merge(
-            compile.coffee()
-            getFiles.js()
+            compile.coffee(isWatch)
+            getFiles.js(isWatch)
         )
-    less: ->
-        getFiles.less()
+    less: (isWatch) ->
+        getFiles.less(isWatch)
         .pipe(less())
-    css: ->
+    css: (isWatch) ->
         merge(
-            compile.less()
-            getFiles.css()
+            compile.less(isWatch)
+            getFiles.css(isWatch)
         )
-    html: ->
-        getFiles.html()
+    html: (isWatch) ->
+        getFiles.html(isWatch)
+
+# =================
+# == CLEAN TASKS ==
+# =================
+
+registerTask "clean", -> ->
+    gulp.src config.buildDirectory, read: false
+    .pipe(clean())
 
 # =======================
 # == DEVELOPMENT TASKS ==
 # =======================
 
-gulp.task "jsDev", ->
-    compile.js()
+registerTask "js-dev", ["clean", "bower"], (isWatch) -> ->
+    compile.js(isWatch)
     .pipe(store.js())
 
-gulp.task "cssDev", ->
-    compile.css()
+registerTask "css-dev", ["clean", "bower"], (isWatch) -> ->
+    compile.css(isWatch)
     .pipe(store.css())
 
-gulp.task "htmlDev", ->
-    compile.html()
+registerTask "html-dev", ["clean"], (isWatch) -> ->
+    compile.html(isWatch)
     .pipe(store.html())
 
-gulp.task "default", ["jsDev", "cssDev", "htmlDev"]
+registerTask "bower", (isWatch) -> ->
+    bower().
+    pipe(gulp.dest("#{config.sourceDirectory}vendor"))
+
+registerTask "default", ["js-dev", "css-dev", "html-dev"]
