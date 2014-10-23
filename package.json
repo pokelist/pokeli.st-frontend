@@ -14,5 +14,10 @@
   "license": "See LICENSE.md",
   "bugs": {
     "url": "https://github.com/pokelist/pokeli.st-frontend/issues"
+  },
+  "devDependencies": {
+    "gulp-coffee": "^2.2.0",
+    "gulp-less": "^1.3.6",
+    "merge-stream": "^0.1.6"
   }
 }
