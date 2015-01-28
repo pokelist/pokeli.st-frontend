@@ -11,7 +11,7 @@ config =
     browserify:
         config:
             extensions: ['.coffee', '.hbs']
-            paths: ['src/js', 'node_modules']
+            paths: ['src', 'src/js', 'node_modules']
             noParse: [path.join(__dirname, '..', 'bower_components', 'materialize', 'bin', 'materialize.js')]
         src: 'js/main.coffee'
         dest: 'js'

@@ -4,6 +4,7 @@ browserify = require 'browserify'
 source = require 'vinyl-source-stream'
 coffeeify = require 'coffeeify'
 debowerify = require 'debowerify'
+hbsfy = require 'hbsfy'
 _ = require 'lodash'
 gulpif = require 'gulp-if'
 uglify = require 'gulp-uglify'
@@ -17,6 +18,7 @@ gulp.task 'browserify', ->
     browserify(config.browserify.src, config.browserify.config)
     .transform(coffeeify)
     .transform(debowerify)
+    .transform(hbsfy)
     .bundle()
     .pipe(plumber())
     .pipe(source(path.basename(config.browserify.src, path.extname(config.browserify.src))+'.js'))
