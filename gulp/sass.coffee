@@ -9,6 +9,7 @@ newer = require 'gulp-newer'
 graph = require 'sass-graph'
 touch = require 'touch'
 path = require 'path'
+browsersync = require 'browser-sync'
 _ = require 'lodash'
 
 g = undefined
@@ -23,6 +24,7 @@ gulp.task 'sass', ->
     .pipe(gulpif(config.environment == 'production', concat('main.css')))
     .pipe(gulpif(config.environment == 'production', cssmin(config.cssmin)))
     .pipe(gulp.dest(config.sass.dest))
+    .pipe(gulpif(browsersync.active, browsersync.reload(stream: true)))
 
     g = graph.parseDir(path.dirname(path.dirname(config.sass.src)))
 

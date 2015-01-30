@@ -40,6 +40,8 @@ config =
         { files: ['assets/**/*'], tasks: ['assets']}
         { files: ['index.html'], tasks: ['html']}
     ]
+    browsersync:
+        proxy: 'http://localhost:1337'
 
 pathProperties = ['dest', 'src', 'paths', 'files']
 
