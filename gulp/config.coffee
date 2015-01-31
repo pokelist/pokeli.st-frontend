@@ -37,9 +37,12 @@ config =
     watch: [
         { files: ['styles/**/*.{sass,scss}'], tasks: [require('./sass').watch, 'sasslint']}
         { files: ['js/**/*.coffee'], tasks: ['browserify', 'coffeelint']}
+        { files: ['templates/**/*.hbs'], tasks: ['browserify']}
         { files: ['assets/**/*'], tasks: ['assets']}
         { files: ['index.html'], tasks: ['html']}
     ]
+    browsersync:
+        proxy: 'http://localhost:1337'
 
 pathProperties = ['dest', 'src', 'paths', 'files']
 

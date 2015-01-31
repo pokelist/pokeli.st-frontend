@@ -10,6 +10,7 @@ gulpif = require 'gulp-if'
 uglify = require 'gulp-uglify'
 buffer = require 'vinyl-buffer'
 path = require 'path'
+browsersync = require 'browser-sync'
 config = require './config'
 
 # TODO: work with more than one entry point
@@ -25,3 +26,4 @@ gulp.task 'browserify', ->
     .pipe(buffer())
     .pipe(gulpif(config.environment == 'production', uglify(config.uglify)))
     .pipe(gulp.dest(config.browserify.dest))
+    .pipe(gulpif(browsersync.active, browsersync.reload(stream: true)))
